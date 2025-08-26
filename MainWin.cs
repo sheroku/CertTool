@@ -330,6 +330,7 @@ namespace CertTool
 
         private void reloadCsrTable()
         {
+            csrkeys.Clear();
             using (this.engine = new DBreezeEngine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CertTool")))
             {
                 using (var tran = engine.GetTransaction())
