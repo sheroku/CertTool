@@ -94,7 +94,7 @@
             txtSans.Multiline = true;
             txtSans.Name = "txtSans";
             txtSans.Size = new Size(354, 71);
-            txtSans.TabIndex = 3;
+            txtSans.TabIndex = 1;
             // 
             // label1
             // 
@@ -102,7 +102,7 @@
             label1.Location = new Point(12, 158);
             label1.Name = "label1";
             label1.Size = new Size(75, 15);
-            label1.TabIndex = 4;
+            label1.TabIndex = 3;
             label1.Text = "Organization";
             // 
             // txtOrganization
@@ -113,7 +113,7 @@
             txtOrganization.MaxLength = 63;
             txtOrganization.Name = "txtOrganization";
             txtOrganization.Size = new Size(354, 23);
-            txtOrganization.TabIndex = 5;
+            txtOrganization.TabIndex = 2;
             txtOrganization.Validating += txtOrganization_Validating;
             // 
             // lblOrganizationUnit
@@ -122,7 +122,7 @@
             lblOrganizationUnit.Location = new Point(12, 202);
             lblOrganizationUnit.Name = "lblOrganizationUnit";
             lblOrganizationUnit.Size = new Size(100, 15);
-            lblOrganizationUnit.TabIndex = 6;
+            lblOrganizationUnit.TabIndex = 4;
             lblOrganizationUnit.Text = "Organization Unit";
             // 
             // txtOrganizationUnit
@@ -133,7 +133,7 @@
             txtOrganizationUnit.MaxLength = 63;
             txtOrganizationUnit.Name = "txtOrganizationUnit";
             txtOrganizationUnit.Size = new Size(354, 23);
-            txtOrganizationUnit.TabIndex = 7;
+            txtOrganizationUnit.TabIndex = 3;
             txtOrganizationUnit.Validating += txtOrganizationUnit_Validating;
             // 
             // lblLocality
@@ -142,7 +142,7 @@
             lblLocality.Location = new Point(12, 246);
             lblLocality.Name = "lblLocality";
             lblLocality.Size = new Size(48, 15);
-            lblLocality.TabIndex = 8;
+            lblLocality.TabIndex = 5;
             lblLocality.Text = "Locality";
             // 
             // txtLocality
@@ -153,7 +153,7 @@
             txtLocality.MaxLength = 63;
             txtLocality.Name = "txtLocality";
             txtLocality.Size = new Size(354, 23);
-            txtLocality.TabIndex = 9;
+            txtLocality.TabIndex = 4;
             txtLocality.Validating += txtLocality_Validating;
             // 
             // lblState
@@ -162,7 +162,7 @@
             lblState.Location = new Point(12, 289);
             lblState.Name = "lblState";
             lblState.Size = new Size(33, 15);
-            lblState.TabIndex = 10;
+            lblState.TabIndex = 6;
             lblState.Text = "State";
             // 
             // txtState
@@ -172,7 +172,7 @@
             txtState.Location = new Point(118, 286);
             txtState.Name = "txtState";
             txtState.Size = new Size(354, 23);
-            txtState.TabIndex = 11;
+            txtState.TabIndex = 5;
             txtState.Validating += txtState_Validating;
             // 
             // lblCountry
@@ -181,7 +181,7 @@
             lblCountry.Location = new Point(12, 328);
             lblCountry.Name = "lblCountry";
             lblCountry.Size = new Size(50, 15);
-            lblCountry.TabIndex = 12;
+            lblCountry.TabIndex = 7;
             lblCountry.Text = "Country";
             // 
             // lblAlgorithm
@@ -190,7 +190,7 @@
             lblAlgorithm.Location = new Point(12, 373);
             lblAlgorithm.Name = "lblAlgorithm";
             lblAlgorithm.Size = new Size(61, 15);
-            lblAlgorithm.TabIndex = 14;
+            lblAlgorithm.TabIndex = 7;
             lblAlgorithm.Text = "Algorithm";
             // 
             // cmbAlgorithm
@@ -202,7 +202,7 @@
             cmbAlgorithm.Location = new Point(118, 370);
             cmbAlgorithm.Name = "cmbAlgorithm";
             cmbAlgorithm.Size = new Size(354, 23);
-            cmbAlgorithm.TabIndex = 15;
+            cmbAlgorithm.TabIndex = 7;
             cmbAlgorithm.ValueMember = "Key";
             // 
             // createBtn
@@ -217,7 +217,7 @@
             createBtn.Location = new Point(41, 428);
             createBtn.Name = "createBtn";
             createBtn.Size = new Size(101, 31);
-            createBtn.TabIndex = 16;
+            createBtn.TabIndex = 8;
             createBtn.Text = "Create";
             createBtn.UseVisualStyleBackColor = false;
             createBtn.Click += createBtn_Click;
@@ -231,7 +231,7 @@
             cancelBtn.Location = new Point(358, 428);
             cancelBtn.Name = "cancelBtn";
             cancelBtn.Size = new Size(83, 31);
-            cancelBtn.TabIndex = 17;
+            cancelBtn.TabIndex = 9;
             cancelBtn.Text = "Cancel";
             cancelBtn.UseMnemonic = false;
             cancelBtn.UseVisualStyleBackColor = false;
@@ -246,7 +246,7 @@
             txtCountry.MaxLength = 2;
             txtCountry.Name = "txtCountry";
             txtCountry.Size = new Size(53, 23);
-            txtCountry.TabIndex = 18;
+            txtCountry.TabIndex = 6;
             txtCountry.Validating += txtCountry_Validating;
             // 
             // errorProvider1

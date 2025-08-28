@@ -417,6 +417,8 @@ namespace CertTool
                         tran.Commit();
                     }
                 }
+
+                reloadCsrTable();
             }
         }
 
