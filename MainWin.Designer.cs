@@ -526,6 +526,7 @@
             tabPage4.TabIndex = 3;
             tabPage4.Text = "PKCS #12";
             tabPage4.UseVisualStyleBackColor = true;
+            tabPage4.Enter += tabPage4_Enter;
             // 
             // clearBtn
             // 

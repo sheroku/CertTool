@@ -490,6 +490,15 @@ namespace CertTool
             ValidatePkcs12();
         }
 
+        private void tabPage4_Enter(object sender, EventArgs e)
+        {
+            txtCertificate.Text = "";
+            txtPrivatekey.Text = "";
+            txtPassphrase.Text = "";
+            cmbExtension.SelectedIndex = -1;
+            errorProvider1.Clear();
+        }
+
         private void ValidatePkcs12()
         {
             bool hasErrors = false;
@@ -557,6 +566,7 @@ namespace CertTool
 
         private void tabPage5_Enter(object sender, EventArgs e)
         {
+            this.txtCsr.Text = "";
             this.csrResult.Visible = false;
         }
 
@@ -564,30 +574,38 @@ namespace CertTool
         {
             this.csrResult.Visible = false;
 
-            if(txtCsr.Text == "")
+            if (txtCsr.Text == "")
             {
                 errorProvider1.Clear();
             }
-            else if ((txtCsr.Text.StartsWith("-----BEGIN CERTIFICATE REQUEST-----") || txtCsr.Text.StartsWith("-----BEGIN NEW CERTIFICATE REQUEST-----")) && (txtCsr.Text.EndsWith("-----END CERTIFICATE REQUEST-----") || txtCsr.Text.EndsWith("-----END NEW CERTIFICATE REQUEST-----")))
+            else if ((txtCsr.Text.Trim().StartsWith("-----BEGIN CERTIFICATE REQUEST-----") || txtCsr.Text.Trim().StartsWith("-----BEGIN NEW CERTIFICATE REQUEST-----")) && (txtCsr.Text.Trim().EndsWith("-----END CERTIFICATE REQUEST-----") || txtCsr.Text.Trim().EndsWith("-----END NEW CERTIFICATE REQUEST-----")))
             {
+                var req = txtCsr.Text.Trim();
+
+                if (req.StartsWith("-----BEGIN NEW CERTIFICATE REQUEST-----") && req.EndsWith("-----END NEW CERTIFICATE REQUEST-----"))
+                {
+                    req = req.Replace("-----BEGIN NEW CERTIFICATE REQUEST-----", "-----BEGIN CERTIFICATE REQUEST-----").Replace("-----END NEW CERTIFICATE REQUEST-----", "-----END CERTIFICATE REQUEST-----");
+                }
+
+
                 errorProvider1.SetError(txtCsr, null);
 
                 CertificateRequest? certReq = null;
 
                 try
                 {
-                    certReq = CertificateRequest.LoadSigningRequestPem(txtCsr.Text, HashAlgorithmName.SHA1, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
+                    certReq = CertificateRequest.LoadSigningRequestPem(req, HashAlgorithmName.SHA1, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
                 }
                 catch
                 {
-                    
+
                 }
 
-                if (certReq != null)
+                if (certReq == null)
                 {
                     try
                     {
-                        certReq = CertificateRequest.LoadSigningRequestPem(txtCsr.Text, HashAlgorithmName.SHA256, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
+                        certReq = CertificateRequest.LoadSigningRequestPem(req, HashAlgorithmName.SHA256, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
                     }
                     catch
                     {
@@ -595,11 +613,11 @@ namespace CertTool
                     }
                 }
 
-                if (certReq != null)
+                if (certReq == null)
                 {
                     try
                     {
-                        certReq = CertificateRequest.LoadSigningRequestPem(txtCsr.Text, HashAlgorithmName.SHA384, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
+                        certReq = CertificateRequest.LoadSigningRequestPem(req, HashAlgorithmName.SHA384, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
                     }
                     catch
                     {
@@ -607,11 +625,11 @@ namespace CertTool
                     }
                 }
 
-                if (certReq != null)
+                if (certReq == null)
                 {
                     try
                     {
-                        certReq = CertificateRequest.LoadSigningRequestPem(txtCsr.Text, HashAlgorithmName.SHA512, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
+                        certReq = CertificateRequest.LoadSigningRequestPem(req, HashAlgorithmName.SHA512, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
                     }
                     catch
                     {
@@ -619,11 +637,11 @@ namespace CertTool
                     }
                 }
 
-                if (certReq != null)
+                if (certReq == null)
                 {
                     try
                     {
-                        certReq = CertificateRequest.LoadSigningRequestPem(txtCsr.Text, HashAlgorithmName.SHA3_256, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
+                        certReq = CertificateRequest.LoadSigningRequestPem(req, HashAlgorithmName.SHA3_256, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
                     }
                     catch
                     {
@@ -631,11 +649,11 @@ namespace CertTool
                     }
                 }
 
-                if (certReq != null)
+                if (certReq == null)
                 {
                     try
                     {
-                        certReq = CertificateRequest.LoadSigningRequestPem(txtCsr.Text, HashAlgorithmName.SHA3_384, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
+                        certReq = CertificateRequest.LoadSigningRequestPem(req, HashAlgorithmName.SHA3_384, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
                     }
                     catch
                     {
@@ -643,11 +661,11 @@ namespace CertTool
                     }
                 }
 
-                if (certReq != null)
+                if (certReq == null)
                 {
                     try
                     {
-                        certReq = CertificateRequest.LoadSigningRequestPem(txtCsr.Text, HashAlgorithmName.SHA3_512, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
+                        certReq = CertificateRequest.LoadSigningRequestPem(req, HashAlgorithmName.SHA3_512, CertificateRequestLoadOptions.UnsafeLoadCertificateExtensions);
                     }
                     catch
                     {
@@ -685,27 +703,27 @@ namespace CertTool
                 {
                     if (part.Trim().StartsWith("CN="))
                     {
-                        ret.commonname = Regex.Replace(part, @"\s+CN=", "");
+                        ret.commonname = Regex.Replace(part, @"\s*CN=", "");
                     }
                     else if (part.Trim().StartsWith("L="))
                     {
-                        ret.locality = Regex.Replace(part, @"\s+L=", "");
+                        ret.locality = Regex.Replace(part, @"\s*L=", "");
                     }
                     else if (part.Trim().StartsWith("S="))
                     {
-                        ret.state = Regex.Replace(part, @"\s+S=", "");
+                        ret.state = Regex.Replace(part, @"\s*S=", "");
                     }
                     else if (part.Trim().StartsWith("C="))
                     {
-                        ret.country = Regex.Replace(part, @"\s+C=", "");
+                        ret.country = Regex.Replace(part, @"\s*C=", "");
                     }
                     else if (part.Trim().StartsWith("O="))
                     {
-                        ret.organization = Regex.Replace(part, @"\s+O=", "").Replace("\"", ""); ;
+                        ret.organization = Regex.Replace(part, @"\s*O=", "").Replace("\"", ""); ;
                     }
                     else if (part.Trim().StartsWith("OU="))
                     {
-                        ret.organizationUnit = Regex.Replace(part, @"\s+OU=", "");
+                        ret.organizationUnit = Regex.Replace(part, @"\s*OU=", "");
                     }
 
                 }
@@ -754,7 +772,5 @@ namespace CertTool
                 errorProvider1.SetError(txtCsr, "Please enter a valid certificate signing request.");
             }
         }
-
-        
     }
 }
