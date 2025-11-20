@@ -72,6 +72,8 @@
             deleteCsrBtn = new Button();
             newCsrBtn = new Button();
             tabPage4 = new TabPage();
+            btn_showhidepass = new Button();
+            btn_randpass = new Button();
             clearBtn = new Button();
             createBtn = new Button();
             label2 = new Label();
@@ -104,7 +106,18 @@
             label3 = new Label();
             txtCsr = new TextBox();
             lblCsr = new Label();
+            tabPage6 = new TabPage();
+            splitContainer1 = new SplitContainer();
+            btn_certfetch = new Button();
+            label11 = new Label();
+            txt_certurl = new TextBox();
+            btn_chain2excel = new Button();
+            tree_certchain = new TreeView();
             errorProvider1 = new ErrorProvider(components);
+            txt_cert2decode = new TextBox();
+            label12 = new Label();
+            label13 = new Label();
+            btn_decodecert = new Button();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgCerts).BeginInit();
@@ -116,6 +129,11 @@
             tabPage4.SuspendLayout();
             tabPage5.SuspendLayout();
             csrResult.SuspendLayout();
+            tabPage6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
+            splitContainer1.Panel1.SuspendLayout();
+            splitContainer1.Panel2.SuspendLayout();
+            splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)errorProvider1).BeginInit();
             SuspendLayout();
             // 
@@ -126,6 +144,7 @@
             tabControl1.Controls.Add(tabPage3);
             tabControl1.Controls.Add(tabPage4);
             tabControl1.Controls.Add(tabPage5);
+            tabControl1.Controls.Add(tabPage6);
             tabControl1.Dock = DockStyle.Fill;
             tabControl1.Location = new Point(0, 0);
             tabControl1.Name = "tabControl1";
@@ -507,6 +526,8 @@
             // 
             // tabPage4
             // 
+            tabPage4.Controls.Add(btn_showhidepass);
+            tabPage4.Controls.Add(btn_randpass);
             tabPage4.Controls.Add(clearBtn);
             tabPage4.Controls.Add(createBtn);
             tabPage4.Controls.Add(label2);
@@ -528,6 +549,28 @@
             tabPage4.UseVisualStyleBackColor = true;
             tabPage4.Enter += tabPage4_Enter;
             // 
+            // btn_showhidepass
+            // 
+            btn_showhidepass.BackgroundImage = Resource1.icon_eye_c;
+            btn_showhidepass.BackgroundImageLayout = ImageLayout.Center;
+            btn_showhidepass.Location = new Point(324, 348);
+            btn_showhidepass.Name = "btn_showhidepass";
+            btn_showhidepass.Size = new Size(47, 24);
+            btn_showhidepass.TabIndex = 13;
+            btn_showhidepass.UseVisualStyleBackColor = true;
+            btn_showhidepass.Click += btn_showhidepass_Click;
+            // 
+            // btn_randpass
+            // 
+            btn_randpass.BackgroundImageLayout = ImageLayout.Center;
+            btn_randpass.Image = Resource1.icon_dice2;
+            btn_randpass.Location = new Point(388, 348);
+            btn_randpass.Name = "btn_randpass";
+            btn_randpass.Size = new Size(47, 24);
+            btn_randpass.TabIndex = 12;
+            btn_randpass.UseVisualStyleBackColor = true;
+            btn_randpass.Click += btn_randpass_Click;
+            // 
             // clearBtn
             // 
             clearBtn.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
@@ -535,7 +578,7 @@
             clearBtn.Cursor = Cursors.Hand;
             clearBtn.FlatStyle = FlatStyle.Flat;
             clearBtn.ForeColor = SystemColors.GradientInactiveCaption;
-            clearBtn.Location = new Point(232, 455);
+            clearBtn.Location = new Point(182, 641);
             clearBtn.Name = "clearBtn";
             clearBtn.Size = new Size(83, 31);
             clearBtn.TabIndex = 11;
@@ -555,7 +598,7 @@
             createBtn.FlatAppearance.MouseOverBackColor = Color.DodgerBlue;
             createBtn.FlatStyle = FlatStyle.Flat;
             createBtn.ForeColor = SystemColors.ButtonFace;
-            createBtn.Location = new Point(19, 455);
+            createBtn.Location = new Point(19, 641);
             createBtn.Name = "createBtn";
             createBtn.Size = new Size(101, 31);
             createBtn.TabIndex = 10;
@@ -586,10 +629,12 @@
             // txtPassphrase
             // 
             txtPassphrase.Location = new Point(99, 348);
+            txtPassphrase.MaxLength = 32;
             txtPassphrase.Name = "txtPassphrase";
             txtPassphrase.PasswordChar = '*';
-            txtPassphrase.Size = new Size(313, 23);
+            txtPassphrase.Size = new Size(223, 23);
             txtPassphrase.TabIndex = 7;
+            txtPassphrase.UseSystemPasswordChar = true;
             // 
             // lblPassphrase
             // 
@@ -851,9 +896,129 @@
             lblCsr.TabIndex = 0;
             lblCsr.Text = "CSR";
             // 
+            // tabPage6
+            // 
+            tabPage6.Controls.Add(splitContainer1);
+            tabPage6.Location = new Point(4, 24);
+            tabPage6.Name = "tabPage6";
+            tabPage6.Padding = new Padding(3);
+            tabPage6.Size = new Size(792, 696);
+            tabPage6.TabIndex = 5;
+            tabPage6.Text = "Certificate Decoder";
+            tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // splitContainer1
+            // 
+            splitContainer1.Dock = DockStyle.Fill;
+            splitContainer1.Location = new Point(3, 3);
+            splitContainer1.Name = "splitContainer1";
+            splitContainer1.Orientation = Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            splitContainer1.Panel1.Controls.Add(btn_decodecert);
+            splitContainer1.Panel1.Controls.Add(label13);
+            splitContainer1.Panel1.Controls.Add(label12);
+            splitContainer1.Panel1.Controls.Add(txt_cert2decode);
+            splitContainer1.Panel1.Controls.Add(btn_certfetch);
+            splitContainer1.Panel1.Controls.Add(label11);
+            splitContainer1.Panel1.Controls.Add(txt_certurl);
+            // 
+            // splitContainer1.Panel2
+            // 
+            splitContainer1.Panel2.Controls.Add(btn_chain2excel);
+            splitContainer1.Panel2.Controls.Add(tree_certchain);
+            splitContainer1.Size = new Size(786, 690);
+            splitContainer1.SplitterDistance = 258;
+            splitContainer1.TabIndex = 3;
+            // 
+            // btn_certfetch
+            // 
+            btn_certfetch.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btn_certfetch.Location = new Point(697, 19);
+            btn_certfetch.Name = "btn_certfetch";
+            btn_certfetch.Size = new Size(75, 23);
+            btn_certfetch.TabIndex = 5;
+            btn_certfetch.Text = "Fetch";
+            btn_certfetch.UseVisualStyleBackColor = true;
+            btn_certfetch.Click += btn_certfetch_Click;
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Location = new Point(11, 23);
+            label11.Name = "label11";
+            label11.Size = new Size(31, 15);
+            label11.TabIndex = 4;
+            label11.Text = "URL:";
+            // 
+            // txt_certurl
+            // 
+            txt_certurl.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            txt_certurl.Location = new Point(78, 20);
+            txt_certurl.Name = "txt_certurl";
+            txt_certurl.Size = new Size(602, 23);
+            txt_certurl.TabIndex = 3;
+            // 
+            // btn_chain2excel
+            // 
+            btn_chain2excel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btn_chain2excel.Location = new Point(642, 394);
+            btn_chain2excel.Name = "btn_chain2excel";
+            btn_chain2excel.Size = new Size(130, 23);
+            btn_chain2excel.TabIndex = 1;
+            btn_chain2excel.Text = "Export detail as Excel";
+            btn_chain2excel.UseVisualStyleBackColor = true;
+            btn_chain2excel.Click += btn_chain2excel_Click;
+            // 
+            // tree_certchain
+            // 
+            tree_certchain.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tree_certchain.ItemHeight = 18;
+            tree_certchain.Location = new Point(0, 0);
+            tree_certchain.Name = "tree_certchain";
+            tree_certchain.Size = new Size(786, 388);
+            tree_certchain.TabIndex = 0;
+            // 
             // errorProvider1
             // 
             errorProvider1.ContainerControl = this;
+            // 
+            // txt_cert2decode
+            // 
+            txt_cert2decode.Location = new Point(78, 85);
+            txt_cert2decode.Multiline = true;
+            txt_cert2decode.Name = "txt_cert2decode";
+            txt_cert2decode.Size = new Size(602, 158);
+            txt_cert2decode.TabIndex = 6;
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Location = new Point(11, 99);
+            label12.Name = "label12";
+            label12.Size = new Size(61, 15);
+            label12.TabIndex = 7;
+            label12.Text = "Certificate";
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Location = new Point(340, 56);
+            label13.Name = "label13";
+            label13.Size = new Size(20, 15);
+            label13.TabIndex = 8;
+            label13.Text = "Or";
+            // 
+            // btn_decodecert
+            // 
+            btn_decodecert.Location = new Point(697, 147);
+            btn_decodecert.Name = "btn_decodecert";
+            btn_decodecert.Size = new Size(75, 23);
+            btn_decodecert.TabIndex = 9;
+            btn_decodecert.Text = "Decode";
+            btn_decodecert.UseVisualStyleBackColor = true;
+            btn_decodecert.Click += btn_decodecert_Click;
             // 
             // MainWin
             // 
@@ -878,6 +1043,12 @@
             tabPage5.PerformLayout();
             csrResult.ResumeLayout(false);
             csrResult.PerformLayout();
+            tabPage6.ResumeLayout(false);
+            splitContainer1.Panel1.ResumeLayout(false);
+            splitContainer1.Panel1.PerformLayout();
+            splitContainer1.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
+            splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)errorProvider1).EndInit();
             ResumeLayout(false);
         }
@@ -959,5 +1130,18 @@
         private Label label9;
         private TextBox txtAlgorithm;
         private Label label10;
+        private TabPage tabPage6;
+        private Button btn_randpass;
+        private Button btn_showhidepass;
+        private SplitContainer splitContainer1;
+        private Button btn_certfetch;
+        private Label label11;
+        private TextBox txt_certurl;
+        private TreeView tree_certchain;
+        private Button btn_chain2excel;
+        private TextBox txt_cert2decode;
+        private Label label12;
+        private Label label13;
+        private Button btn_decodecert;
     }
 }

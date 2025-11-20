@@ -1,16 +1,20 @@
-using System;
-using System.Buffers.Text;
 using System.ComponentModel;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 using CertTool.Classes;
 using CertTool.Models;
 using DBreeze;
 using DBreeze.DataTypes;
-using static System.Net.Mime.MediaTypeNames;
+
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+
 
 namespace CertTool
 {
@@ -138,7 +142,7 @@ namespace CertTool
             if (this.certificates[e.RowIndex].validFrom > DateTime.Now || this.certificates[e.RowIndex].validTo < DateTime.Now)
             {
 
-                using (Brush brush = new SolidBrush(Color.Red))
+                using (Brush brush = new SolidBrush(System.Drawing.Color.Red))
                 {
                     e.Graphics.FillRectangle(brush, e.RowBounds);
                 }
@@ -287,7 +291,7 @@ namespace CertTool
             if (this.certificates[e.RowIndex].validFrom > DateTime.Now || this.certificates[e.RowIndex].validTo < DateTime.Now)
             {
 
-                using (Brush brush = new SolidBrush(Color.Red))
+                using (Brush brush = new SolidBrush(System.Drawing.Color.Red))
                 {
                     e.Graphics.FillRectangle(brush, e.RowBounds);
                 }
@@ -408,9 +412,9 @@ namespace CertTool
                         foreach (DataGridViewRow row in dgCsrKey.Rows)
                         {
                             DataGridViewCheckBoxCell checkCell = (DataGridViewCheckBoxCell)row.Cells["chkrecordid"];
-                            if (checkCell.Value == "true")
+                            if (checkCell.Value?.ToString() == "true")
                             {
-                                tran.RemoveKey<Guid>("csrkey", (Guid)row.Cells["guid"].Value);
+                                tran.RemoveKey<Guid>("csrkey", (Guid)row.Cells["guid"].Value!);
                             }
                         }
 
@@ -502,7 +506,7 @@ namespace CertTool
         private void ValidatePkcs12()
         {
             bool hasErrors = false;
-            foreach (Control control in this.tabPage4.Controls)
+            foreach (System.Windows.Forms.Control control in this.tabPage4.Controls)
             {
                 if (errorProvider1.GetError(control).Length > 0)
                 {
@@ -770,6 +774,309 @@ namespace CertTool
             else
             {
                 errorProvider1.SetError(txtCsr, "Please enter a valid certificate signing request.");
+            }
+        }
+
+        private void btn_showhidepass_Click(object sender, EventArgs e)
+        {
+            if (txtPassphrase.UseSystemPasswordChar)
+            {
+                txtPassphrase.UseSystemPasswordChar = false;
+                txtPassphrase.PasswordChar = '\0';
+                btn_showhidepass.BackgroundImage = Resource1.icon_eye_o;
+            }
+            else
+            {
+                txtPassphrase.UseSystemPasswordChar = true;
+                txtPassphrase.PasswordChar = '*';
+                btn_showhidepass.BackgroundImage = Resource1.icon_eye_c;
+            }
+        }
+
+        private void btn_randpass_Click(object sender, EventArgs e)
+        {
+            const string lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
+            const string uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const string numericChars = "0123456789";
+
+            string allChars = lowercaseChars + uppercaseChars + numericChars;
+
+            StringBuilder password = new StringBuilder();
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                byte[] randomBytes = new byte[12];
+                rng.GetBytes(randomBytes); // Fills the array with cryptographically strong random bytes
+
+                for (int i = 0; i < 12; i++)
+                {
+                    // Use the random bytes to select characters from the combined set
+                    int index = randomBytes[i] % allChars.Length;
+                    password.Append(allChars[index]);
+                }
+            }
+
+            txtPassphrase.Text = password.ToString();
+
+        }
+
+        private async void btn_certfetch_Click(object sender, EventArgs e)
+        {
+            if (txt_certurl.Text.Trim().StartsWith("https://"))
+            {
+                try
+                {
+                    tree_certchain.Nodes.Clear();
+
+                    var host = new Uri(txt_certurl.Text.Trim()).Host;
+                    using (var client = new TcpClient())
+                    {
+                        await client.ConnectAsync(host, 443);
+                        using (var sslStream = new SslStream(client.GetStream(), false, RemoteCertificateValidationCallback))
+                        {
+                            await sslStream.AuthenticateAsClientAsync(host);
+                            if (sslStream.RemoteCertificate != null)
+                            {
+                                var cert = new X509Certificate2(sslStream.RemoteCertificate);
+
+                                this.RenderCertChain(cert);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error fetching certificate: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please enter a valid URL starting with https://", "Invalid URL", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void RenderCertChain(X509Certificate2 cert)
+        {
+            using (X509Chain chain = new X509Chain())
+            {
+                chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                var chainbuilt = chain.Build(cert);
+                if (chainbuilt)
+                {
+                    var rchain = chain.ChainElements.Reverse();
+                    TreeNode lastnode = null;
+
+                    for (int i = 0; i < rchain.ToList().Count; i++)
+                    {
+                        var element = rchain.ToList()[i];
+
+                        var subject = new CertificateSigningRequest();
+                        foreach (string part in element.Certificate.SubjectName.Decode(X500DistinguishedNameFlags.Reversed | X500DistinguishedNameFlags.UseSemicolons).Split(';'))
+                        {
+                            if (part.Trim().StartsWith("CN="))
+                            {
+                                subject.commonname = Regex.Replace(part, @"\s*CN=", "");
+                            }
+                            else if (part.Trim().StartsWith("L="))
+                            {
+                                subject.locality = Regex.Replace(part, @"\s*L=", "");
+                            }
+                            else if (part.Trim().StartsWith("S="))
+                            {
+                                subject.state = Regex.Replace(part, @"\s*S=", "");
+                            }
+                            else if (part.Trim().StartsWith("C="))
+                            {
+                                subject.country = Regex.Replace(part, @"\s*C=", "");
+                            }
+                            else if (part.Trim().StartsWith("O="))
+                            {
+                                subject.organization = Regex.Replace(part, @"\s*O=", "").Replace("\"", ""); ;
+                            }
+                            else if (part.Trim().StartsWith("OU="))
+                            {
+                                subject.organizationUnit = Regex.Replace(part, @"\s*OU=", "");
+                            }
+                            else if (part.Trim().StartsWith("E=") && subject.commonname == "")
+                            {
+                                subject.commonname = Regex.Replace(part, @"\s*E=", "");
+                            }
+                        }
+
+                        foreach (X509Extension data in element.Certificate.Extensions)
+                        {
+                            if (data.Oid?.FriendlyName == "Subject Alternative Name")
+                            {
+                                X509SubjectAlternativeNameExtension ext = (X509SubjectAlternativeNameExtension)data;
+
+                                AsnEncodedData asndata = new AsnEncodedData(ext.Oid, ext.RawData);
+
+                                subject.sans = Array.ConvertAll(asndata.Format(false).Split(','), p => p.Trim().Replace("DNS Name=", "").Replace("RFC822 Name=", "").Replace("Other Name:Principal Name=", ""));
+                            }
+                        }
+
+                        var currentcert = new Certificate()
+                        {
+                            commonname = subject.commonname != "" ? subject.commonname : subject.organizationUnit,
+                            locality = subject.locality,
+                            state = subject.state,
+                            country = subject.country,
+                            organization = subject.organization,
+                            organizationUnit = subject.organizationUnit,
+                            sans = string.Join(", ", subject.sans),
+                            validFrom = element.Certificate.NotBefore,
+                            validTo = element.Certificate.NotAfter,
+                            keySize = element.Certificate.GetRSAPublicKey()?.KeySize.ToString() ?? "",
+                            serialNumber = element.Certificate.SerialNumber
+                        };
+
+                        TreeNode node = new TreeNode($"{currentcert.commonname} ({currentcert.validFrom} - {currentcert.validTo})");
+                        node.Tag = currentcert;
+
+
+                        if (i == 0)
+                        {
+                            lastnode = node;
+                            tree_certchain.Nodes.Add(node);
+                        }
+                        else
+                        {
+                            lastnode.Nodes.Add(node);
+                            lastnode = node;
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Failed to build certificate chain.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                }
+            }
+        }
+
+        private static bool RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            return true;
+            if (sslPolicyErrors == SslPolicyErrors.None)
+            {
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"Certificate error: {sslPolicyErrors}");
+                return false;
+            }
+        }
+
+        private void btn_chain2excel_Click(object sender, EventArgs e)
+        {
+            string filePath = "C:\\export.xlsx";
+
+            if (tree_certchain.Nodes.Count > 0)
+            {
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+                saveFileDialog1.Filter = "Excel Files|*.xlsx";
+                saveFileDialog1.Title = "Save Certificate Chain to Excel File";
+                saveFileDialog1.FileName = "certchain.xlsx";
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    filePath = saveFileDialog1.FileName;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                MessageBox.Show("No certificate chain data to export.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Create(filePath, SpreadsheetDocumentType.Workbook))
+            {
+                WorkbookPart workbookpart = spreadsheetDocument.AddWorkbookPart();
+                workbookpart.Workbook = new Workbook();
+
+                WorksheetPart worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+                Sheets sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
+
+                Sheet sheet = new Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Sheet1" };
+                sheets.Append(sheet);
+
+                SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                Row row = new Row();
+
+                row.Append(
+                    new Cell() { CellReference = "A1", DataType = CellValues.String, CellValue = new CellValue("Commonname") },
+                    new Cell() { CellReference = "B1", DataType = CellValues.String, CellValue = new CellValue("Valid From") },
+                    new Cell() { CellReference = "C1", DataType = CellValues.String, CellValue = new CellValue("Valid To") },
+                    new Cell() { CellReference = "D1", DataType = CellValues.String, CellValue = new CellValue("Organization") },
+                    new Cell() { CellReference = "E1", DataType = CellValues.String, CellValue = new CellValue("Organization Unit") },
+                    new Cell() { CellReference = "F1", DataType = CellValues.String, CellValue = new CellValue("State") },
+                    new Cell() { CellReference = "G1", DataType = CellValues.String, CellValue = new CellValue("Country") },
+                    new Cell() { CellReference = "H1", DataType = CellValues.String, CellValue = new CellValue("Key Size") },
+                    new Cell() { CellReference = "I1", DataType = CellValues.String, CellValue = new CellValue("Serial number") }
+                );
+
+                sheetData.Append(row);
+
+
+                TreeNode root = tree_certchain.Nodes[0];
+                sheetData.Append(this.GenNodeData(root));
+                var lastnode = root;
+                while (lastnode.Nodes.Count > 0)
+                {
+                    lastnode = lastnode.Nodes[0];
+                    sheetData.Append(this.GenNodeData(lastnode));
+                }
+
+                // Save the worksheet.
+                worksheetPart.Worksheet.Save();
+            }
+        }
+
+        private Row GenNodeData(TreeNode node)
+        {
+            Row dataRow = new Row();
+            if (node.Tag is Certificate cert)
+            {
+                dataRow.Append(
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.commonname) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.validFrom.ToString()) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.validTo.ToString()) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.organization) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.organizationUnit) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.state) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.country) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.keySize) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.serialNumber) }
+                );
+            }
+            return dataRow;
+        }
+
+        private void btn_decodecert_Click(object sender, EventArgs e)
+        {
+            if (txt_cert2decode.Text.Trim().StartsWith("-----BEGIN CERTIFICATE-----") && txt_cert2decode.Text.Trim().EndsWith("-----END CERTIFICATE-----"))
+            {
+                tree_certchain.Nodes.Clear();
+                X509Certificate2 cert = X509Certificate2.CreateFromPem(txt_cert2decode.Text.Trim());
+
+                if(cert.NotAfter < DateTime.Now)
+                {
+                    MessageBox.Show($"Error: Cannot complete certificate chain the certificate is already expired ({cert.NotAfter}).", "Certificate Expired", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    this.RenderCertChain(cert);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please enter a valid PEM encoded certificate.", "Invalid Certificate", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }
