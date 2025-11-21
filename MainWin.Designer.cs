@@ -44,7 +44,10 @@
             validToDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             issuerDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             keySizeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            algorithm = new DataGridViewTextBoxColumn();
             serialNumberDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            status = new DataGridViewTextBoxColumn();
+            pemdata = new DataGridViewTextBoxColumn();
             certificateBindingSource = new BindingSource(components);
             tabPage2 = new TabPage();
             dgRoots = new DataGridView();
@@ -59,7 +62,32 @@
             validToDataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
             issuerDataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
             keySizeDataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn13 = new DataGridViewTextBoxColumn();
             serialNumberDataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn15 = new DataGridViewTextBoxColumn();
+            dataGridViewTextBoxColumn16 = new DataGridViewTextBoxColumn();
+            tabPage7 = new TabPage();
+            btnExport2Excel = new Button();
+            btnDeleteCert = new Button();
+            btnImportCert = new Button();
+            dgMyCerts = new DataGridView();
+            certid = new DataGridViewCheckBoxColumn();
+            CertificateId = new DataGridViewTextBoxColumn();
+            commonnameDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            sansDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            organizationDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            organizationUnitDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            localityDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            stateDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            countryDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            validFromDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            validToDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            issuerDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            keySizeDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            algorithmDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            serialNumberDataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+            statusDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            pemdataDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             tabPage3 = new TabPage();
             dgCsrKey = new DataGridView();
             chkrecordid = new DataGridViewCheckBoxColumn();
@@ -108,22 +136,24 @@
             lblCsr = new Label();
             tabPage6 = new TabPage();
             splitContainer1 = new SplitContainer();
+            btn_decodecert = new Button();
+            label13 = new Label();
+            label12 = new Label();
+            txt_cert2decode = new TextBox();
             btn_certfetch = new Button();
             label11 = new Label();
             txt_certurl = new TextBox();
             btn_chain2excel = new Button();
             tree_certchain = new TreeView();
             errorProvider1 = new ErrorProvider(components);
-            txt_cert2decode = new TextBox();
-            label12 = new Label();
-            label13 = new Label();
-            btn_decodecert = new Button();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgCerts).BeginInit();
             ((System.ComponentModel.ISupportInitialize)certificateBindingSource).BeginInit();
             tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgRoots).BeginInit();
+            tabPage7.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgMyCerts).BeginInit();
             tabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgCsrKey).BeginInit();
             tabPage4.SuspendLayout();
@@ -141,6 +171,7 @@
             // 
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tabPage7);
             tabControl1.Controls.Add(tabPage3);
             tabControl1.Controls.Add(tabPage4);
             tabControl1.Controls.Add(tabPage5);
@@ -151,6 +182,7 @@
             tabControl1.SelectedIndex = 0;
             tabControl1.Size = new Size(800, 724);
             tabControl1.TabIndex = 0;
+            tabControl1.Enter += tabControl1_Enter;
             // 
             // tabPage1
             // 
@@ -173,7 +205,7 @@
             dgCerts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgCerts.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
             dgCerts.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgCerts.Columns.AddRange(new DataGridViewColumn[] { commonnameDataGridViewTextBoxColumn, sansDataGridViewTextBoxColumn, localityDataGridViewTextBoxColumn, stateDataGridViewTextBoxColumn, countryDataGridViewTextBoxColumn, organizationDataGridViewTextBoxColumn, organizationUnitDataGridViewTextBoxColumn, validFromDataGridViewTextBoxColumn, validToDataGridViewTextBoxColumn, issuerDataGridViewTextBoxColumn, keySizeDataGridViewTextBoxColumn, serialNumberDataGridViewTextBoxColumn });
+            dgCerts.Columns.AddRange(new DataGridViewColumn[] { commonnameDataGridViewTextBoxColumn, sansDataGridViewTextBoxColumn, localityDataGridViewTextBoxColumn, stateDataGridViewTextBoxColumn, countryDataGridViewTextBoxColumn, organizationDataGridViewTextBoxColumn, organizationUnitDataGridViewTextBoxColumn, validFromDataGridViewTextBoxColumn, validToDataGridViewTextBoxColumn, issuerDataGridViewTextBoxColumn, keySizeDataGridViewTextBoxColumn, algorithm, serialNumberDataGridViewTextBoxColumn, status, pemdata });
             dgCerts.DataSource = certificateBindingSource;
             dgCerts.Dock = DockStyle.Fill;
             dgCerts.EditMode = DataGridViewEditMode.EditProgrammatically;
@@ -268,12 +300,33 @@
             keySizeDataGridViewTextBoxColumn.Name = "keySizeDataGridViewTextBoxColumn";
             keySizeDataGridViewTextBoxColumn.ReadOnly = true;
             // 
+            // algorithm
+            // 
+            algorithm.DataPropertyName = "algorithm";
+            algorithm.HeaderText = "Algorithm";
+            algorithm.Name = "algorithm";
+            algorithm.ReadOnly = true;
+            // 
             // serialNumberDataGridViewTextBoxColumn
             // 
             serialNumberDataGridViewTextBoxColumn.DataPropertyName = "serialNumber";
             serialNumberDataGridViewTextBoxColumn.HeaderText = "Serial Number";
             serialNumberDataGridViewTextBoxColumn.Name = "serialNumberDataGridViewTextBoxColumn";
             serialNumberDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // status
+            // 
+            status.DataPropertyName = "status";
+            status.HeaderText = "Status";
+            status.Name = "status";
+            status.ReadOnly = true;
+            // 
+            // pemdata
+            // 
+            pemdata.DataPropertyName = "pemdata";
+            pemdata.HeaderText = "PEM";
+            pemdata.Name = "pemdata";
+            pemdata.ReadOnly = true;
             // 
             // certificateBindingSource
             // 
@@ -301,7 +354,7 @@
             dgRoots.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgRoots.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
             dgRoots.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgRoots.Columns.AddRange(new DataGridViewColumn[] { commonnameDataGridViewTextBoxColumn1, sansDataGridViewTextBoxColumn1, localityDataGridViewTextBoxColumn1, stateDataGridViewTextBoxColumn1, countryDataGridViewTextBoxColumn1, organizationDataGridViewTextBoxColumn1, organizationUnitDataGridViewTextBoxColumn1, validFromDataGridViewTextBoxColumn1, validToDataGridViewTextBoxColumn1, issuerDataGridViewTextBoxColumn1, keySizeDataGridViewTextBoxColumn1, serialNumberDataGridViewTextBoxColumn1 });
+            dgRoots.Columns.AddRange(new DataGridViewColumn[] { commonnameDataGridViewTextBoxColumn1, sansDataGridViewTextBoxColumn1, localityDataGridViewTextBoxColumn1, stateDataGridViewTextBoxColumn1, countryDataGridViewTextBoxColumn1, organizationDataGridViewTextBoxColumn1, organizationUnitDataGridViewTextBoxColumn1, validFromDataGridViewTextBoxColumn1, validToDataGridViewTextBoxColumn1, issuerDataGridViewTextBoxColumn1, keySizeDataGridViewTextBoxColumn1, dataGridViewTextBoxColumn13, serialNumberDataGridViewTextBoxColumn1, dataGridViewTextBoxColumn15, dataGridViewTextBoxColumn16 });
             dgRoots.DataSource = certificateBindingSource;
             dgRoots.Dock = DockStyle.Fill;
             dgRoots.EditMode = DataGridViewEditMode.EditProgrammatically;
@@ -395,12 +448,208 @@
             keySizeDataGridViewTextBoxColumn1.Name = "keySizeDataGridViewTextBoxColumn1";
             keySizeDataGridViewTextBoxColumn1.ReadOnly = true;
             // 
+            // dataGridViewTextBoxColumn13
+            // 
+            dataGridViewTextBoxColumn13.DataPropertyName = "algorithm";
+            dataGridViewTextBoxColumn13.HeaderText = "Algorithm";
+            dataGridViewTextBoxColumn13.Name = "dataGridViewTextBoxColumn13";
+            dataGridViewTextBoxColumn13.ReadOnly = true;
+            // 
             // serialNumberDataGridViewTextBoxColumn1
             // 
             serialNumberDataGridViewTextBoxColumn1.DataPropertyName = "serialNumber";
             serialNumberDataGridViewTextBoxColumn1.HeaderText = "Serial Number";
             serialNumberDataGridViewTextBoxColumn1.Name = "serialNumberDataGridViewTextBoxColumn1";
             serialNumberDataGridViewTextBoxColumn1.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn15
+            // 
+            dataGridViewTextBoxColumn15.DataPropertyName = "status";
+            dataGridViewTextBoxColumn15.HeaderText = "Status";
+            dataGridViewTextBoxColumn15.Name = "dataGridViewTextBoxColumn15";
+            dataGridViewTextBoxColumn15.ReadOnly = true;
+            // 
+            // dataGridViewTextBoxColumn16
+            // 
+            dataGridViewTextBoxColumn16.DataPropertyName = "pemdata";
+            dataGridViewTextBoxColumn16.HeaderText = "PEM";
+            dataGridViewTextBoxColumn16.Name = "dataGridViewTextBoxColumn16";
+            dataGridViewTextBoxColumn16.ReadOnly = true;
+            // 
+            // tabPage7
+            // 
+            tabPage7.Controls.Add(btnExport2Excel);
+            tabPage7.Controls.Add(btnDeleteCert);
+            tabPage7.Controls.Add(btnImportCert);
+            tabPage7.Controls.Add(dgMyCerts);
+            tabPage7.Location = new Point(4, 24);
+            tabPage7.Name = "tabPage7";
+            tabPage7.Padding = new Padding(3);
+            tabPage7.Size = new Size(792, 696);
+            tabPage7.TabIndex = 6;
+            tabPage7.Text = "My Certificates";
+            tabPage7.UseVisualStyleBackColor = true;
+            // 
+            // btnExport2Excel
+            // 
+            btnExport2Excel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnExport2Excel.Location = new Point(686, 14);
+            btnExport2Excel.Name = "btnExport2Excel";
+            btnExport2Excel.Size = new Size(98, 23);
+            btnExport2Excel.TabIndex = 4;
+            btnExport2Excel.Text = "Export to Excel";
+            btnExport2Excel.UseVisualStyleBackColor = true;
+            btnExport2Excel.Click += btnExport2Excel_Click;
+            // 
+            // btnDeleteCert
+            // 
+            btnDeleteCert.Location = new Point(150, 14);
+            btnDeleteCert.Name = "btnDeleteCert";
+            btnDeleteCert.Size = new Size(75, 23);
+            btnDeleteCert.TabIndex = 3;
+            btnDeleteCert.Text = "Delete";
+            btnDeleteCert.UseVisualStyleBackColor = true;
+            btnDeleteCert.Click += btnDeleteCert_Click;
+            // 
+            // btnImportCert
+            // 
+            btnImportCert.Location = new Point(18, 14);
+            btnImportCert.Name = "btnImportCert";
+            btnImportCert.Size = new Size(115, 23);
+            btnImportCert.TabIndex = 2;
+            btnImportCert.Text = "Import Certificate";
+            btnImportCert.UseVisualStyleBackColor = true;
+            btnImportCert.Click += btnImportCert_Click;
+            // 
+            // dgMyCerts
+            // 
+            dgMyCerts.AllowUserToAddRows = false;
+            dgMyCerts.AllowUserToDeleteRows = false;
+            dgMyCerts.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            dgMyCerts.AutoGenerateColumns = false;
+            dgMyCerts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgMyCerts.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+            dgMyCerts.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgMyCerts.Columns.AddRange(new DataGridViewColumn[] { certid, CertificateId, commonnameDataGridViewTextBoxColumn2, sansDataGridViewTextBoxColumn2, organizationDataGridViewTextBoxColumn2, organizationUnitDataGridViewTextBoxColumn2, localityDataGridViewTextBoxColumn2, stateDataGridViewTextBoxColumn2, countryDataGridViewTextBoxColumn2, validFromDataGridViewTextBoxColumn2, validToDataGridViewTextBoxColumn2, issuerDataGridViewTextBoxColumn2, keySizeDataGridViewTextBoxColumn2, algorithmDataGridViewTextBoxColumn, serialNumberDataGridViewTextBoxColumn2, statusDataGridViewTextBoxColumn, pemdataDataGridViewTextBoxColumn });
+            dgMyCerts.DataSource = certificateBindingSource;
+            dgMyCerts.EditMode = DataGridViewEditMode.EditOnF2;
+            dgMyCerts.Location = new Point(3, 53);
+            dgMyCerts.MultiSelect = false;
+            dgMyCerts.Name = "dgMyCerts";
+            dgMyCerts.RowHeadersVisible = false;
+            dgMyCerts.RowTemplate.Resizable = DataGridViewTriState.False;
+            dgMyCerts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgMyCerts.Size = new Size(786, 640);
+            dgMyCerts.TabIndex = 1;
+            dgMyCerts.CellBeginEdit += dgMyCerts_CellBeginEdit;
+            dgMyCerts.CellValueChanged += dgMyCerts_CellValueChanged;
+            dgMyCerts.CurrentCellDirtyStateChanged += dgMyCerts_CurrentCellDirtyStateChanged;
+            // 
+            // certid
+            // 
+            certid.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            certid.FalseValue = "false";
+            certid.HeaderText = "";
+            certid.Name = "certid";
+            certid.Resizable = DataGridViewTriState.False;
+            certid.TrueValue = "true";
+            certid.Width = 20;
+            // 
+            // CertificateId
+            // 
+            CertificateId.DataPropertyName = "CertificateId";
+            CertificateId.HeaderText = "ID";
+            CertificateId.Name = "CertificateId";
+            // 
+            // commonnameDataGridViewTextBoxColumn2
+            // 
+            commonnameDataGridViewTextBoxColumn2.DataPropertyName = "commonname";
+            commonnameDataGridViewTextBoxColumn2.HeaderText = "Commonname";
+            commonnameDataGridViewTextBoxColumn2.Name = "commonnameDataGridViewTextBoxColumn2";
+            // 
+            // sansDataGridViewTextBoxColumn2
+            // 
+            sansDataGridViewTextBoxColumn2.DataPropertyName = "sans";
+            sansDataGridViewTextBoxColumn2.HeaderText = "SANs";
+            sansDataGridViewTextBoxColumn2.Name = "sansDataGridViewTextBoxColumn2";
+            // 
+            // organizationDataGridViewTextBoxColumn2
+            // 
+            organizationDataGridViewTextBoxColumn2.DataPropertyName = "organization";
+            organizationDataGridViewTextBoxColumn2.HeaderText = "Organization";
+            organizationDataGridViewTextBoxColumn2.Name = "organizationDataGridViewTextBoxColumn2";
+            // 
+            // organizationUnitDataGridViewTextBoxColumn2
+            // 
+            organizationUnitDataGridViewTextBoxColumn2.DataPropertyName = "organizationUnit";
+            organizationUnitDataGridViewTextBoxColumn2.HeaderText = "Organization Unit";
+            organizationUnitDataGridViewTextBoxColumn2.Name = "organizationUnitDataGridViewTextBoxColumn2";
+            // 
+            // localityDataGridViewTextBoxColumn2
+            // 
+            localityDataGridViewTextBoxColumn2.DataPropertyName = "locality";
+            localityDataGridViewTextBoxColumn2.HeaderText = "Locality";
+            localityDataGridViewTextBoxColumn2.Name = "localityDataGridViewTextBoxColumn2";
+            // 
+            // stateDataGridViewTextBoxColumn2
+            // 
+            stateDataGridViewTextBoxColumn2.DataPropertyName = "state";
+            stateDataGridViewTextBoxColumn2.HeaderText = "State";
+            stateDataGridViewTextBoxColumn2.Name = "stateDataGridViewTextBoxColumn2";
+            // 
+            // countryDataGridViewTextBoxColumn2
+            // 
+            countryDataGridViewTextBoxColumn2.DataPropertyName = "country";
+            countryDataGridViewTextBoxColumn2.HeaderText = "Country";
+            countryDataGridViewTextBoxColumn2.Name = "countryDataGridViewTextBoxColumn2";
+            // 
+            // validFromDataGridViewTextBoxColumn2
+            // 
+            validFromDataGridViewTextBoxColumn2.DataPropertyName = "validFrom";
+            validFromDataGridViewTextBoxColumn2.HeaderText = "Valid From";
+            validFromDataGridViewTextBoxColumn2.Name = "validFromDataGridViewTextBoxColumn2";
+            // 
+            // validToDataGridViewTextBoxColumn2
+            // 
+            validToDataGridViewTextBoxColumn2.DataPropertyName = "validTo";
+            validToDataGridViewTextBoxColumn2.HeaderText = "Valid Till";
+            validToDataGridViewTextBoxColumn2.Name = "validToDataGridViewTextBoxColumn2";
+            // 
+            // issuerDataGridViewTextBoxColumn2
+            // 
+            issuerDataGridViewTextBoxColumn2.DataPropertyName = "issuer";
+            issuerDataGridViewTextBoxColumn2.HeaderText = "Issuer";
+            issuerDataGridViewTextBoxColumn2.Name = "issuerDataGridViewTextBoxColumn2";
+            // 
+            // keySizeDataGridViewTextBoxColumn2
+            // 
+            keySizeDataGridViewTextBoxColumn2.DataPropertyName = "keySize";
+            keySizeDataGridViewTextBoxColumn2.HeaderText = "Key Size";
+            keySizeDataGridViewTextBoxColumn2.Name = "keySizeDataGridViewTextBoxColumn2";
+            // 
+            // algorithmDataGridViewTextBoxColumn
+            // 
+            algorithmDataGridViewTextBoxColumn.DataPropertyName = "algorithm";
+            algorithmDataGridViewTextBoxColumn.HeaderText = "Algorithm";
+            algorithmDataGridViewTextBoxColumn.Name = "algorithmDataGridViewTextBoxColumn";
+            // 
+            // serialNumberDataGridViewTextBoxColumn2
+            // 
+            serialNumberDataGridViewTextBoxColumn2.DataPropertyName = "serialNumber";
+            serialNumberDataGridViewTextBoxColumn2.HeaderText = "Serial Number";
+            serialNumberDataGridViewTextBoxColumn2.Name = "serialNumberDataGridViewTextBoxColumn2";
+            // 
+            // statusDataGridViewTextBoxColumn
+            // 
+            statusDataGridViewTextBoxColumn.DataPropertyName = "status";
+            statusDataGridViewTextBoxColumn.HeaderText = "Status";
+            statusDataGridViewTextBoxColumn.Name = "statusDataGridViewTextBoxColumn";
+            // 
+            // pemdataDataGridViewTextBoxColumn
+            // 
+            pemdataDataGridViewTextBoxColumn.DataPropertyName = "pemdata";
+            pemdataDataGridViewTextBoxColumn.HeaderText = "PEM";
+            pemdataDataGridViewTextBoxColumn.Name = "pemdataDataGridViewTextBoxColumn";
             // 
             // tabPage3
             // 
@@ -932,6 +1181,44 @@
             splitContainer1.SplitterDistance = 258;
             splitContainer1.TabIndex = 3;
             // 
+            // btn_decodecert
+            // 
+            btn_decodecert.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btn_decodecert.Location = new Point(697, 147);
+            btn_decodecert.Name = "btn_decodecert";
+            btn_decodecert.Size = new Size(75, 23);
+            btn_decodecert.TabIndex = 9;
+            btn_decodecert.Text = "Decode";
+            btn_decodecert.UseVisualStyleBackColor = true;
+            btn_decodecert.Click += btn_decodecert_Click;
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Location = new Point(340, 56);
+            label13.Name = "label13";
+            label13.Size = new Size(20, 15);
+            label13.TabIndex = 8;
+            label13.Text = "Or";
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Location = new Point(11, 99);
+            label12.Name = "label12";
+            label12.Size = new Size(61, 15);
+            label12.TabIndex = 7;
+            label12.Text = "Certificate";
+            // 
+            // txt_cert2decode
+            // 
+            txt_cert2decode.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            txt_cert2decode.Location = new Point(78, 85);
+            txt_cert2decode.Multiline = true;
+            txt_cert2decode.Name = "txt_cert2decode";
+            txt_cert2decode.Size = new Size(602, 158);
+            txt_cert2decode.TabIndex = 6;
+            // 
             // btn_certfetch
             // 
             btn_certfetch.Anchor = AnchorStyles.Top | AnchorStyles.Right;
@@ -984,42 +1271,6 @@
             // 
             errorProvider1.ContainerControl = this;
             // 
-            // txt_cert2decode
-            // 
-            txt_cert2decode.Location = new Point(78, 85);
-            txt_cert2decode.Multiline = true;
-            txt_cert2decode.Name = "txt_cert2decode";
-            txt_cert2decode.Size = new Size(602, 158);
-            txt_cert2decode.TabIndex = 6;
-            // 
-            // label12
-            // 
-            label12.AutoSize = true;
-            label12.Location = new Point(11, 99);
-            label12.Name = "label12";
-            label12.Size = new Size(61, 15);
-            label12.TabIndex = 7;
-            label12.Text = "Certificate";
-            // 
-            // label13
-            // 
-            label13.AutoSize = true;
-            label13.Location = new Point(340, 56);
-            label13.Name = "label13";
-            label13.Size = new Size(20, 15);
-            label13.TabIndex = 8;
-            label13.Text = "Or";
-            // 
-            // btn_decodecert
-            // 
-            btn_decodecert.Location = new Point(697, 147);
-            btn_decodecert.Name = "btn_decodecert";
-            btn_decodecert.Size = new Size(75, 23);
-            btn_decodecert.TabIndex = 9;
-            btn_decodecert.Text = "Decode";
-            btn_decodecert.UseVisualStyleBackColor = true;
-            btn_decodecert.Click += btn_decodecert_Click;
-            // 
             // MainWin
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1035,6 +1286,8 @@
             ((System.ComponentModel.ISupportInitialize)certificateBindingSource).EndInit();
             tabPage2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgRoots).EndInit();
+            tabPage7.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)dgMyCerts).EndInit();
             tabPage3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgCsrKey).EndInit();
             tabPage4.ResumeLayout(false);
@@ -1062,31 +1315,7 @@
         private TabPage tabPage4;
         private DataGridView dgCerts;
         private DataGridView dgRoots;
-        private DataGridViewTextBoxColumn commonnameDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn sansDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn localityDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn stateDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn countryDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn organizationDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn organizationUnitDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn validFromDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn validToDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn issuerDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn keySizeDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn serialNumberDataGridViewTextBoxColumn;
         private BindingSource certificateBindingSource;
-        private DataGridViewTextBoxColumn commonnameDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn sansDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn localityDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn stateDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn countryDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn organizationDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn organizationUnitDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn validFromDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn validToDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn issuerDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn keySizeDataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn serialNumberDataGridViewTextBoxColumn1;
         private Button newCsrBtn;
         private Button deleteCsrBtn;
         private DataGridView dgCsrKey;
@@ -1143,5 +1372,57 @@
         private Label label12;
         private Label label13;
         private Button btn_decodecert;
+        private TabPage tabPage7;
+        private DataGridView dgMyCerts;
+        private Button btnDeleteCert;
+        private Button btnImportCert;
+        private Button btnExport2Excel;
+        private DataGridViewTextBoxColumn commonnameDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn sansDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn localityDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn stateDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn countryDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn organizationDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn organizationUnitDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn validFromDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn validToDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn issuerDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn keySizeDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn algorithm;
+        private DataGridViewTextBoxColumn serialNumberDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn status;
+        private DataGridViewTextBoxColumn pemdata;
+        private DataGridViewTextBoxColumn commonnameDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn sansDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn localityDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn stateDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn countryDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn organizationDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn organizationUnitDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn validFromDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn validToDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn issuerDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn keySizeDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn13;
+        private DataGridViewTextBoxColumn serialNumberDataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn15;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn16;
+        private DataGridViewCheckBoxColumn certid;
+        private DataGridViewTextBoxColumn CertificateId;
+        private DataGridViewTextBoxColumn commonnameDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn sansDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn organizationDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn organizationUnitDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn localityDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn stateDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn countryDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn validFromDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn validToDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn issuerDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn keySizeDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn algorithmDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn serialNumberDataGridViewTextBoxColumn2;
+        private DataGridViewTextBoxColumn statusDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn pemdataDataGridViewTextBoxColumn;
     }
 }

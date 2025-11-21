@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Runtime.ConstrainedExecution;
+using System.Runtime.Remoting;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -12,6 +13,7 @@ using DBreeze;
 using DBreeze.DataTypes;
 
 using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
@@ -22,6 +24,7 @@ namespace CertTool
     {
         SortableBindingList<Certificate> certificates = new SortableBindingList<Certificate>();
         SortableBindingList<CsrKeyRecord> csrkeys = new SortableBindingList<CsrKeyRecord>();
+        SortableBindingList<Certificate> mycerts = new SortableBindingList<Certificate>();
         DBreezeEngine? engine = null;
 
         public MainWin()
@@ -38,100 +41,7 @@ namespace CertTool
 
             foreach (X509Certificate2 certificate in store.Certificates)
             {
-                var subject = new CertificateSigningRequest();
-                var issuer = new CertificateSigningRequest();
-                foreach (string part in certificate.SubjectName.Decode(X500DistinguishedNameFlags.Reversed | X500DistinguishedNameFlags.UseSemicolons).Split(';'))
-                {
-                    if (part.Trim().StartsWith("CN="))
-                    {
-                        subject.commonname = Regex.Replace(part, @"\s*CN=", "");
-                    }
-                    else if (part.Trim().StartsWith("L="))
-                    {
-                        subject.locality = Regex.Replace(part, @"\s*L=", "");
-                    }
-                    else if (part.Trim().StartsWith("S="))
-                    {
-                        subject.state = Regex.Replace(part, @"\s*S=", "");
-                    }
-                    else if (part.Trim().StartsWith("C="))
-                    {
-                        subject.country = Regex.Replace(part, @"\s*C=", "");
-                    }
-                    else if (part.Trim().StartsWith("O="))
-                    {
-                        subject.organization = Regex.Replace(part, @"\s*O=", "").Replace("\"", ""); ;
-                    }
-                    else if (part.Trim().StartsWith("OU="))
-                    {
-                        subject.organizationUnit = Regex.Replace(part, @"\s*OU=", "");
-                    }
-                    else if (part.Trim().StartsWith("E=") && subject.commonname == "")
-                    {
-                        subject.commonname = Regex.Replace(part, @"\s*E=", "");
-                    }
-                }
-
-                foreach (X509Extension data in certificate.Extensions)
-                {
-                    if (data.Oid?.FriendlyName == "Subject Alternative Name")
-                    {
-                        X509SubjectAlternativeNameExtension ext = (X509SubjectAlternativeNameExtension)data;
-
-                        AsnEncodedData asndata = new AsnEncodedData(ext.Oid, ext.RawData);
-
-                        subject.sans = Array.ConvertAll(asndata.Format(false).Split(','), p => p.Trim().Replace("DNS Name=", "").Replace("RFC822 Name=", "").Replace("Other Name:Principal Name=", ""));
-                    }
-                }
-
-                foreach (string part in certificate.IssuerName.Decode(X500DistinguishedNameFlags.Reversed | X500DistinguishedNameFlags.UseSemicolons).Split(';'))
-                {
-                    if (part.Trim().StartsWith("CN="))
-                    {
-                        issuer.commonname = Regex.Replace(part, @"\s*CN=", "");
-                    }
-                    else if (part.Trim().StartsWith("L="))
-                    {
-                        issuer.locality = Regex.Replace(part, @"\s*L=", "");
-                    }
-                    else if (part.Trim().StartsWith("S="))
-                    {
-                        issuer.state = Regex.Replace(part, @"\s*S=", "");
-                    }
-                    else if (part.Trim().StartsWith("C="))
-                    {
-                        issuer.country = Regex.Replace(part, @"\s*C=", "");
-                    }
-                    else if (part.Trim().StartsWith("O="))
-                    {
-                        issuer.organization = Regex.Replace(part, @"\s*O=", "").Replace("\"", ""); ;
-                    }
-                    else if (part.Trim().StartsWith("OU="))
-                    {
-                        issuer.organizationUnit = Regex.Replace(part, @"\s*OU=", "");
-                    }
-                    else if (part.Trim().StartsWith("E=") && issuer.commonname == "")
-                    {
-                        issuer.commonname = Regex.Replace(part, @"\s*E=", "");
-                    }
-
-                }
-
-                certificates.Add(new Certificate()
-                {
-                    commonname = subject.commonname != "" ? subject.commonname : subject.organizationUnit,
-                    locality = subject.locality,
-                    state = subject.state,
-                    country = subject.country,
-                    organization = subject.organization,
-                    organizationUnit = subject.organizationUnit,
-                    sans = string.Join(", ", subject.sans),
-                    issuer = issuer.commonname,
-                    validFrom = certificate.NotBefore,
-                    validTo = certificate.NotAfter,
-                    keySize = certificate.GetRSAPublicKey()?.KeySize.ToString() ?? "",
-                    serialNumber = certificate.SerialNumber
-                });
+                certificates.Add(new Certificate(certificate));
             }
 
             dgCerts.DataSource = certificates;
@@ -139,7 +49,7 @@ namespace CertTool
 
         private void dgCerts_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
         {
-            if (this.certificates[e.RowIndex].validFrom > DateTime.Now || this.certificates[e.RowIndex].validTo < DateTime.Now)
+            if (this.certificates[e.RowIndex].validFrom > DateTime.Now || this.certificates[e.RowIndex].validTo < DateTime.Now || this.certificates[e.RowIndex].status == "Invalid")
             {
 
                 using (Brush brush = new SolidBrush(System.Drawing.Color.Red))
@@ -187,100 +97,7 @@ namespace CertTool
 
             foreach (X509Certificate2 certificate in store.Certificates)
             {
-                var subject = new CertificateSigningRequest();
-                var issuer = new CertificateSigningRequest();
-                foreach (string part in certificate.SubjectName.Decode(X500DistinguishedNameFlags.Reversed | X500DistinguishedNameFlags.UseSemicolons).Split(';'))
-                {
-                    if (part.Trim().StartsWith("CN="))
-                    {
-                        subject.commonname = Regex.Replace(part, @"\s*CN=", "");
-                    }
-                    else if (part.Trim().StartsWith("L="))
-                    {
-                        subject.locality = Regex.Replace(part, @"\s*L=", "");
-                    }
-                    else if (part.Trim().StartsWith("S="))
-                    {
-                        subject.state = Regex.Replace(part, @"\s*S=", "");
-                    }
-                    else if (part.Trim().StartsWith("C="))
-                    {
-                        subject.country = Regex.Replace(part, @"\s*C=", "");
-                    }
-                    else if (part.Trim().StartsWith("O="))
-                    {
-                        subject.organization = Regex.Replace(part, @"\s*O=", "").Replace("\"", ""); ;
-                    }
-                    else if (part.Trim().StartsWith("OU="))
-                    {
-                        subject.organizationUnit = Regex.Replace(part, @"\s*OU=", "");
-                    }
-                    else if (part.Trim().StartsWith("E=") && subject.commonname == "")
-                    {
-                        subject.commonname = Regex.Replace(part, @"\s*E=", "");
-                    }
-                }
-
-                foreach (X509Extension data in certificate.Extensions)
-                {
-                    if (data.Oid?.FriendlyName == "Subject Alternative Name")
-                    {
-                        X509SubjectAlternativeNameExtension ext = (X509SubjectAlternativeNameExtension)data;
-
-                        AsnEncodedData asndata = new AsnEncodedData(ext.Oid, ext.RawData);
-
-                        subject.sans = Array.ConvertAll(asndata.Format(false).Split(','), p => p.Trim().Replace("DNS Name=", "").Replace("RFC822 Name=", "").Replace("Other Name:Principal Name=", ""));
-                    }
-                }
-
-                foreach (string part in certificate.IssuerName.Decode(X500DistinguishedNameFlags.Reversed | X500DistinguishedNameFlags.UseSemicolons).Split(';'))
-                {
-                    if (part.Trim().StartsWith("CN="))
-                    {
-                        issuer.commonname = Regex.Replace(part, @"\s*CN=", "");
-                    }
-                    else if (part.Trim().StartsWith("L="))
-                    {
-                        issuer.locality = Regex.Replace(part, @"\s*L=", "");
-                    }
-                    else if (part.Trim().StartsWith("S="))
-                    {
-                        issuer.state = Regex.Replace(part, @"\s*S=", "");
-                    }
-                    else if (part.Trim().StartsWith("C="))
-                    {
-                        issuer.country = Regex.Replace(part, @"\s*C=", "");
-                    }
-                    else if (part.Trim().StartsWith("O="))
-                    {
-                        issuer.organization = Regex.Replace(part, @"\s*O=", "").Replace("\"", ""); ;
-                    }
-                    else if (part.Trim().StartsWith("OU="))
-                    {
-                        issuer.organizationUnit = Regex.Replace(part, @"\s*OU=", "");
-                    }
-                    else if (part.Trim().StartsWith("E=") && issuer.commonname == "")
-                    {
-                        issuer.commonname = Regex.Replace(part, @"\s*E=", "");
-                    }
-
-                }
-
-                certificates.Add(new Certificate()
-                {
-                    commonname = subject.commonname != "" ? subject.commonname : subject.organizationUnit,
-                    locality = subject.locality,
-                    state = subject.state,
-                    country = subject.country,
-                    organization = subject.organization,
-                    organizationUnit = subject.organizationUnit,
-                    sans = string.Join(", ", subject.sans),
-                    issuer = issuer.commonname,
-                    validFrom = certificate.NotBefore,
-                    validTo = certificate.NotAfter,
-                    keySize = certificate.GetRSAPublicKey()?.KeySize.ToString() ?? "",
-                    serialNumber = certificate.SerialNumber
-                });
+                certificates.Add(new Certificate(certificate));
             }
 
             dgRoots.DataSource = certificates;
@@ -288,7 +105,7 @@ namespace CertTool
 
         private void dgRoots_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
         {
-            if (this.certificates[e.RowIndex].validFrom > DateTime.Now || this.certificates[e.RowIndex].validTo < DateTime.Now)
+            if (this.certificates[e.RowIndex].validFrom > DateTime.Now || this.certificates[e.RowIndex].validTo < DateTime.Now || this.certificates[e.RowIndex].status == "Invalid")
             {
 
                 using (Brush brush = new SolidBrush(System.Drawing.Color.Red))
@@ -869,65 +686,7 @@ namespace CertTool
                     {
                         var element = rchain.ToList()[i];
 
-                        var subject = new CertificateSigningRequest();
-                        foreach (string part in element.Certificate.SubjectName.Decode(X500DistinguishedNameFlags.Reversed | X500DistinguishedNameFlags.UseSemicolons).Split(';'))
-                        {
-                            if (part.Trim().StartsWith("CN="))
-                            {
-                                subject.commonname = Regex.Replace(part, @"\s*CN=", "");
-                            }
-                            else if (part.Trim().StartsWith("L="))
-                            {
-                                subject.locality = Regex.Replace(part, @"\s*L=", "");
-                            }
-                            else if (part.Trim().StartsWith("S="))
-                            {
-                                subject.state = Regex.Replace(part, @"\s*S=", "");
-                            }
-                            else if (part.Trim().StartsWith("C="))
-                            {
-                                subject.country = Regex.Replace(part, @"\s*C=", "");
-                            }
-                            else if (part.Trim().StartsWith("O="))
-                            {
-                                subject.organization = Regex.Replace(part, @"\s*O=", "").Replace("\"", ""); ;
-                            }
-                            else if (part.Trim().StartsWith("OU="))
-                            {
-                                subject.organizationUnit = Regex.Replace(part, @"\s*OU=", "");
-                            }
-                            else if (part.Trim().StartsWith("E=") && subject.commonname == "")
-                            {
-                                subject.commonname = Regex.Replace(part, @"\s*E=", "");
-                            }
-                        }
-
-                        foreach (X509Extension data in element.Certificate.Extensions)
-                        {
-                            if (data.Oid?.FriendlyName == "Subject Alternative Name")
-                            {
-                                X509SubjectAlternativeNameExtension ext = (X509SubjectAlternativeNameExtension)data;
-
-                                AsnEncodedData asndata = new AsnEncodedData(ext.Oid, ext.RawData);
-
-                                subject.sans = Array.ConvertAll(asndata.Format(false).Split(','), p => p.Trim().Replace("DNS Name=", "").Replace("RFC822 Name=", "").Replace("Other Name:Principal Name=", ""));
-                            }
-                        }
-
-                        var currentcert = new Certificate()
-                        {
-                            commonname = subject.commonname != "" ? subject.commonname : subject.organizationUnit,
-                            locality = subject.locality,
-                            state = subject.state,
-                            country = subject.country,
-                            organization = subject.organization,
-                            organizationUnit = subject.organizationUnit,
-                            sans = string.Join(", ", subject.sans),
-                            validFrom = element.Certificate.NotBefore,
-                            validTo = element.Certificate.NotAfter,
-                            keySize = element.Certificate.GetRSAPublicKey()?.KeySize.ToString() ?? "",
-                            serialNumber = element.Certificate.SerialNumber
-                        };
+                        var currentcert = new Certificate(element.Certificate);
 
                         TreeNode node = new TreeNode($"{currentcert.commonname} ({currentcert.validFrom} - {currentcert.validTo})");
                         node.Tag = currentcert;
@@ -1015,10 +774,12 @@ namespace CertTool
                     new Cell() { CellReference = "C1", DataType = CellValues.String, CellValue = new CellValue("Valid To") },
                     new Cell() { CellReference = "D1", DataType = CellValues.String, CellValue = new CellValue("Organization") },
                     new Cell() { CellReference = "E1", DataType = CellValues.String, CellValue = new CellValue("Organization Unit") },
-                    new Cell() { CellReference = "F1", DataType = CellValues.String, CellValue = new CellValue("State") },
-                    new Cell() { CellReference = "G1", DataType = CellValues.String, CellValue = new CellValue("Country") },
-                    new Cell() { CellReference = "H1", DataType = CellValues.String, CellValue = new CellValue("Key Size") },
-                    new Cell() { CellReference = "I1", DataType = CellValues.String, CellValue = new CellValue("Serial number") }
+                    new Cell() { CellReference = "F1", DataType = CellValues.String, CellValue = new CellValue("Locality") },
+                    new Cell() { CellReference = "G1", DataType = CellValues.String, CellValue = new CellValue("State") },
+                    new Cell() { CellReference = "H1", DataType = CellValues.String, CellValue = new CellValue("Country") },
+                    new Cell() { CellReference = "I1", DataType = CellValues.String, CellValue = new CellValue("Key Size") },
+                    new Cell() { CellReference = "J1", DataType = CellValues.String, CellValue = new CellValue("Algorithm") },
+                    new Cell() { CellReference = "K1", DataType = CellValues.String, CellValue = new CellValue("Serial number") }
                 );
 
                 sheetData.Append(row);
@@ -1049,9 +810,11 @@ namespace CertTool
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.validTo.ToString()) },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.organization) },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.organizationUnit) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.locality) },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.state) },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.country) },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.keySize) },
+                    new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.algorithm) },
                     new Cell() { DataType = CellValues.String, CellValue = new CellValue(cert.serialNumber) }
                 );
             }
@@ -1065,7 +828,7 @@ namespace CertTool
                 tree_certchain.Nodes.Clear();
                 X509Certificate2 cert = X509Certificate2.CreateFromPem(txt_cert2decode.Text.Trim());
 
-                if(cert.NotAfter < DateTime.Now)
+                if (cert.NotAfter < DateTime.Now)
                 {
                     MessageBox.Show($"Error: Cannot complete certificate chain the certificate is already expired ({cert.NotAfter}).", "Certificate Expired", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -1077,6 +840,217 @@ namespace CertTool
             else
             {
                 MessageBox.Show("Please enter a valid PEM encoded certificate.", "Invalid Certificate", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void reloadMyCert()
+        {
+            mycerts.Clear();
+            using (this.engine = new DBreezeEngine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CertTool")))
+            {
+                //engine.Scheme.DeleteTable("mycerts");
+                using (var tran = engine.GetTransaction())
+                {
+                    tran.SynchronizeTables("mycerts");
+                    //ulong cnt = tran.Count("mycerts");
+                    foreach (var row in tran.SelectForward<Guid, DbMJSON<Certificate>>("mycerts"))
+                    {
+                        var obj = row.Value.Get;
+                        obj.CertificateId = row.Key;
+
+                        using (X509Chain chain = new X509Chain())
+                        {
+                            chain.ChainPolicy.RevocationMode = X509RevocationMode.Online; // Or X509RevocationMode.Offline, or X509RevocationMode.NoCheck
+                            chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot; // Or other flags as needed
+
+                            // Build and validate the certificate chain
+                            bool isValid = chain.Build(X509Certificate2.CreateFromPem(obj.pemdata));
+
+                            if (!isValid)
+                            {
+                                foreach (X509ChainStatus status in chain.ChainStatus)
+                                {
+                                    if (status.Status == X509ChainStatusFlags.Revoked)
+                                    {
+                                        obj.status = "Revoked";
+                                    }
+                                }
+                            }
+
+                            obj.status = (isValid ? "Valid" : "Invalid");
+                        }
+
+                        tran.Insert<Guid, DbMJSON<Certificate>>("mycerts", obj.CertificateId, obj);
+
+                        mycerts.Add(obj);
+                    }
+
+                    dgMyCerts.DataSource = mycerts;
+                }
+            }
+        }
+
+        private void btnImportCert_Click(object sender, EventArgs e)
+        {
+            var dlg = new ImportCert();
+            if (dlg.ShowDialog(this) == DialogResult.OK)
+            {
+                MessageBox.Show("Certificate imported successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.reloadMyCert();
+            }
+        }
+
+        private void tabControl1_Enter(object sender, EventArgs e)
+        {
+            this.reloadMyCert();
+        }
+
+        private void dgMyCerts_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (dgMyCerts.IsCurrentCellDirty)
+            {
+                dgMyCerts.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        private void dgMyCerts_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            if (e.ColumnIndex == 0)
+            {
+                e.Cancel = false;
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void dgMyCerts_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            this.btnDeleteCert.Enabled = false;
+
+            if (dgMyCerts.Columns[e.ColumnIndex].Name == "certid")
+            {
+                foreach (DataGridViewRow row in dgMyCerts.Rows)
+                {
+                    DataGridViewCheckBoxCell checkCell = (DataGridViewCheckBoxCell)row.Cells["certid"];
+                    if (checkCell.Value == "true")
+                    {
+                        this.btnDeleteCert.Enabled = true;
+                    }
+                }
+                dgMyCerts.Invalidate();
+            }
+        }
+
+        private void btnDeleteCert_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Are you sure to delete selected records?", "Deleting confirmation", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                using (this.engine = new DBreezeEngine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CertTool")))
+                {
+                    using (var tran = engine.GetTransaction())
+                    {
+                        tran.SynchronizeTables("mycerts");
+
+                        foreach (DataGridViewRow row in dgMyCerts.Rows)
+                        {
+                            DataGridViewCheckBoxCell checkCell = (DataGridViewCheckBoxCell)row.Cells["certid"];
+                            if (checkCell.Value?.ToString() == "true")
+                            {
+                                tran.RemoveKey<Guid>("mycerts", (Guid)row.Cells["CertificateId"].Value!);
+                            }
+                        }
+
+                        tran.Commit();
+                    }
+                }
+
+                this.reloadMyCert();
+            }
+        }
+
+        private void btnExport2Excel_Click(object sender, EventArgs e)
+        {
+            string filePath = "C:\\export.xlsx";
+
+            if (dgMyCerts.RowCount > 0)
+            {
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+                saveFileDialog1.Filter = "Excel Files|*.xlsx";
+                saveFileDialog1.Title = "Save Certificate to Excel File";
+                saveFileDialog1.FileName = "mycert.xlsx";
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    filePath = saveFileDialog1.FileName;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                MessageBox.Show("No certificate data to export.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Create(filePath, SpreadsheetDocumentType.Workbook))
+            {
+                WorkbookPart workbookpart = spreadsheetDocument.AddWorkbookPart();
+                workbookpart.Workbook = new Workbook();
+
+                WorksheetPart worksheetPart = workbookpart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+                Sheets sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
+
+                Sheet sheet = new Sheet() { Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart), SheetId = 1, Name = "Sheet1" };
+                sheets.Append(sheet);
+
+                SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                Row row = new Row();
+
+                row.Append(
+                    new Cell() { CellReference = "A1", DataType = CellValues.String, CellValue = new CellValue("Commonname") },
+                    new Cell() { CellReference = "B1", DataType = CellValues.String, CellValue = new CellValue("Valid From") },
+                    new Cell() { CellReference = "C1", DataType = CellValues.String, CellValue = new CellValue("Valid To") },
+                    new Cell() { CellReference = "D1", DataType = CellValues.String, CellValue = new CellValue("Organization") },
+                    new Cell() { CellReference = "E1", DataType = CellValues.String, CellValue = new CellValue("Organization Unit") },
+                    new Cell() { CellReference = "F1", DataType = CellValues.String, CellValue = new CellValue("Locality") },
+                    new Cell() { CellReference = "G1", DataType = CellValues.String, CellValue = new CellValue("State") },
+                    new Cell() { CellReference = "H1", DataType = CellValues.String, CellValue = new CellValue("Country") },
+                    new Cell() { CellReference = "I1", DataType = CellValues.String, CellValue = new CellValue("Key Size") },
+                    new Cell() { CellReference = "J1", DataType = CellValues.String, CellValue = new CellValue("Algorithm") },
+                    new Cell() { CellReference = "K1", DataType = CellValues.String, CellValue = new CellValue("Serial number") },
+                    new Cell() { CellReference = "L1", DataType = CellValues.String, CellValue = new CellValue("Status") }
+                );
+
+                sheetData.Append(row);
+
+
+                foreach (var data in mycerts)
+                {
+                    Row dataRow = new Row();
+                    dataRow.Append(
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.commonname) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.validFrom.ToString()) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.validTo.ToString()) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.organization) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.organizationUnit) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.locality) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.state) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.country) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.keySize) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.algorithm) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.serialNumber) },
+                        new Cell() { DataType = CellValues.String, CellValue = new CellValue(data.status) }
+                    );
+                    sheetData.Append(dataRow);
+                }
+                // Save the worksheet.
+                worksheetPart.Worksheet.Save();
             }
         }
     }
